@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>اختبار المفردات التفاعلي - Vocabulary Practice</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --olive-main: #6d7f46;
+      --olive-badge: #7c8d53;
+      --brown-num: #b85324;
+      --cream-bar: #fcf1cf;
+    }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: radial-gradient(circle at top, #fdfbf7 0%, #eef2e6 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .en-font {
+      font-family: 'Fredoka', sans-serif;
+    }
+
+    /* Wooden Banner Styling */
+    .wood-banner {
+      background: linear-gradient(180deg, #f9dc9c 0%, #e7b96a 50%, #f3cd82 100%);
+      border: 3px solid #2b2118;
+      box-shadow: 0 4px 0 #2b2118;
+      position: relative;
+    }
+    .wood-banner::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-top: 2px dashed rgba(139, 90, 43, 0.35);
+      border-bottom: 2px dashed rgba(139, 90, 43, 0.35);
+      pointer-events: none;
+    }
+
+    /* Olive Title Banner */
+    .olive-banner {
+      background-color: var(--olive-main);
+      clip-path: polygon(1% 8%, 98% 0%, 100% 88%, 95% 98%, 2% 95%, 0% 20%);
+      box-shadow: 0 6px 15px rgba(109, 127, 70, 0.3);
+    }
+
+    /* Question Number Tab */
+    .q-number-badge {
+      background-color: var(--brown-num);
+      color: #fff;
+      border-radius: 50% 10% 10% 50%;
+      box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.15);
+    }
+
+    /* Question Cream Bar */
+    .q-sentence-bar {
+      background-color: var(--cream-bar);
+      border-radius: 12px 9999px 9999px 12px;
+      border: 2px solid #f3e0a9;
+      transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Option Letter Circle */
+    .opt-letter {
+      background-color: var(--olive-badge);
+      color: white;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-style: italic;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, background-color 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    /* Hand-drawn SVG circle animation */
+    .circle-svg {
+      position: absolute;
+      inset: -8px -14px;
+      width: calc(100% + 28px);
+      height: calc(100% + 16px);
+      pointer-events: none;
+      overflow: visible;
+      z-index: 20;
+    }
+
+    .circle-path {
+      fill: none;
+      stroke-width: 4.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 450;
+      stroke-dashoffset: 450;
+      transition: stroke-dashoffset 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .option-btn.circled-correct .circle-path {
+      stroke: #16a34a;
+      stroke-dashoffset: 0;
+      filter: drop-shadow(0 2px 4px rgba(22, 163, 74, 0.35));
+    }
+
+    .option-btn.circled-wrong .circle-path {
+      stroke: #dc2626;
+      stroke-dashoffset: 0;
+      filter: drop-shadow(0 2px 4px rgba(220, 38, 38, 0.3));
+    }
+
+    /* Shake animation for wrong answers */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .shake-anim {
+      animation: shake 0.45s ease-in-out;
+    }
+
+    /* Static green styling when sentence is being read (no movement or pulsing) */
+    .speaking-active {
+      border-color: #10b981 !important;
+      background-color: #f0fdf4 !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+    /* Static word tokens (no jumping or moving highlight) */
+    .word-token {
+      display: inline-block;
+      padding: 1px 3px;
+      margin: 0 1px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .word-token.active-word {
+      background-color: transparent;
+      color: inherit !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Static Green Highlight on the answered blank slot */
+    .blank-slot {
+      display: inline-block;
+      min-width: 115px;
+      border-bottom: 3px solid #2b2118;
+      text-align: center;
+      padding: 2px 14px;
+      margin: 0 4px;
+      color: #15803d;
+      font-weight: 700;
+      white-space: nowrap;
+      vertical-align: baseline;
+    }
+    .blank-slot.filled {
+      background-color: #10b981 !important;
+      color: #ffffff !important;
+      border-bottom: none !important;
+      border-radius: 10px;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    .blank-slot.active-word {
+      background-color: #10b981 !important;
+      color: #ffffff !important;
+      border-bottom: none !important;
+      border-radius: 10px;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Smooth Calm Wave Bars */
+    .wave-bar {
+      width: 4px;
+      background: linear-gradient(to top, #34d399, #a7f3d0);
+      border-radius: 999px;
+      animation: calmWave 0.85s infinite ease-in-out alternate;
+    }
+    .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+    .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+    .wave-bar:nth-child(5) { animation-delay: 0.6s; }
+    @keyframes calmWave {
+      0% { height: 5px; opacity: 0.6; }
+      100% { height: 20px; opacity: 1; }
+    }
+  </style>
+</head>
+<body class="pb-24 text-slate-800 select-none">
+
+  <!-- Sticky Progress & Achievement Top Bar -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-2.5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        
+        <!-- Progress Info -->
+        <div class="flex items-center gap-3 flex-1 min-w-[250px]">
+          <div class="w-12 h-12 rounded-2xl bg-amber-100 border-2 border-amber-400 flex flex-col items-center justify-center shadow-inner">
+            <span id="progressPercentText" class="text-sm font-extrabold text-amber-900 leading-none">0%</span>
+            <span class="text-[10px] text-amber-700 font-bold">التقدم</span>
+          </div>
+          <div class="flex-1">
+            <div class="flex justify-between items-center mb-1 text-xs font-bold text-stone-600">
+              <span>مسار التقدم والإنجاز (<span id="answeredCount">0</span> من 8 جمل)</span>
+              <span id="motivationalStatus" class="text-emerald-700">ابدأ بحل السؤال الأول! 🚀</span>
+            </div>
+            <div class="w-full h-3.5 bg-stone-200 rounded-full overflow-hidden p-0.5 border border-stone-300">
+              <div id="progressBarFill" class="h-full bg-gradient-to-l from-emerald-500 via-teal-500 to-amber-400 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Achievement Stats & Controls -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Accuracy Badge -->
+          <div class="bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl flex items-center gap-2">
+            <span class="text-base">🎯</span>
+            <div>
+              <div class="text-[10px] text-emerald-700 font-bold leading-none">دقة الإنجاز</div>
+              <div id="accuracyText" class="text-xs sm:text-sm font-extrabold text-emerald-900">100%</div>
+            </div>
+          </div>
+
+          <!-- Score Badge -->
+          <div class="bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl flex items-center gap-2">
+            <span class="text-base">⭐</span>
+            <div>
+              <div class="text-[10px] text-amber-700 font-bold leading-none">النقاط</div>
+              <div class="text-xs sm:text-sm font-extrabold text-amber-900"><span id="scoreText">0</span> / 8</div>
+            </div>
+          </div>
+
+          <!-- Voice Studio Settings Toggle Button -->
+          <button onclick="toggleVoiceStudioPanel()" class="px-3 py-2 rounded-xl border-2 border-teal-300 bg-teal-50 hover:bg-teal-100 text-xs font-extrabold text-teal-800 flex items-center gap-1.5 transition shadow-sm" title="إعدادات الصوت الهادئ والمبتكر">
+            <span>🎙️</span>
+            <span id="currentPersonaBadge">الصوت: هادئ وابتكاري</span>
+            <span class="text-[10px]">⚙️</span>
+          </button>
+
+          <!-- View Mode Toggle -->
+          <button id="viewModeBtn" onclick="toggleViewMode()" class="px-3 py-2 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-xs font-bold text-indigo-700 flex items-center gap-1.5 transition">
+            <span>📑</span>
+            <span id="viewModeLabel">عرض سؤال بسؤال</span>
+          </button>
+
+          <!-- Reset Button -->
+          <button onclick="resetQuiz()" class="p-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition" title="إعادة الاختبار">
+            🔄
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Collapsible Calm & Innovative Voice Studio Panel -->
+      <div id="voiceStudioPanel" class="hidden mt-3 pt-3 border-t border-stone-200/80 bg-gradient-to-l from-teal-50/70 via-emerald-50/50 to-amber-50/60 p-3.5 rounded-2xl border border-teal-200/80">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          
+          <!-- Persona Selection -->
+          <div class="flex flex-col gap-1.5">
+            <span class="text-xs font-extrabold text-teal-900 flex items-center gap-1">
+              <span>✨</span> اختر نمط المتحدث المبتكر:
+            </span>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setVoicePersona('innovative')" id="persona-innovative" class="persona-btn px-3 py-1.5 rounded-xl text-xs font-bold border-2 border-teal-600 bg-teal-600 text-white transition flex items-center gap-1.5 shadow-sm">
+                <span>🌟</span>
+                <span>ابتكاري هادئ (الكلمة ثم الجملة + إضاءة الكلمات)</span>
+              </button>
+              <button onclick="setVoicePersona('storyteller')" id="persona-storyteller" class="persona-btn px-3 py-1.5 rounded-xl text-xs font-bold border-2 border-stone-300 bg-white text-stone-700 hover:border-teal-400 transition flex items-center gap-1.5">
+                <span>🌿</span>
+                <span>الراوي الهادئ الدافئ (قراءة انسيابية)</span>
+              </button>
+              <button onclick="setVoicePersona('clear_kid')" id="persona-clear_kid" class="persona-btn px-3 py-1.5 rounded-xl text-xs font-bold border-2 border-stone-300 bg-white text-stone-700 hover:border-teal-400 transition flex items-center gap-1.5">
+                <span>🐢</span>
+                <span>معلم متأنٍّ وواضح (ممتاز للمبتدئين)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Specific Neural Voice Picker & Test -->
+          <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[240px] justify-end">
+            <div class="flex flex-col gap-1 flex-1 max-w-xs">
+              <label class="text-[11px] font-bold text-stone-600">محرك الصوت الطبيعي (Neural Voice):</label>
+              <select id="voiceSelectDropdown" onchange="handleManualVoiceChange()" class="w-full text-xs font-semibold bg-white border border-stone-300 rounded-xl px-2.5 py-2 text-stone-800 focus:outline-none focus:border-teal-500" dir="ltr">
+                <option value="auto">✨ Auto Best Calm Natural Voice</option>
+              </select>
+            </div>
+            <button id="testVoiceBtn" onclick="testCalmVoice()" class="mt-4 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-stone-300 disabled:text-stone-500 disabled:cursor-not-allowed text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+              <span>🎧</span>
+              <span id="testVoiceBtnLabel">تجربة الصوت (بعد الإجابة)</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Worksheet Container -->
+  <main class="max-w-4xl mx-auto px-4 pt-6">
+
+    <!-- Original Worksheet Header Replica -->
+    <div class="bg-white rounded-3xl p-5 sm:p-7 shadow-lg border-2 border-stone-200/80 mb-6 relative overflow-hidden">
+      
+      <!-- Top Title: Lightbulb + Vocabulary Practice -->
+      <div class="flex justify-center items-center mb-6 relative">
+        <div class="relative flex items-center">
+          <!-- Glowing Lightbulb SVG -->
+          <div class="z-10 -ml-5 transform -rotate-12 drop-shadow-md">
+            <svg class="w-14 h-14 sm:w-16 sm:h-16" viewBox="0 0 64 64" fill="none">
+              <line x1="32" y1="2" x2="32" y2="9" stroke="#f59e0b" stroke-width="3.5" stroke-linecap="round"/>
+              <line x1="11" y1="12" x2="16" y2="17" stroke="#f59e0b" stroke-width="3.5" stroke-linecap="round"/>
+              <line x1="53" y1="12" x2="48" y2="17" stroke="#f59e0b" stroke-width="3.5" stroke-linecap="round"/>
+              <path d="M20 34C17 29 17 21 22 16C27 11 37 11 42 16C47 21 47 29 44 34C41 38 39 41 39 46H25C25 41 23 38 20 34Z" fill="#fcd34d" stroke="#d97706" stroke-width="2.5"/>
+              <path d="M26 46H38V53C38 55.2 36.2 57 34 57H30C27.8 57 26 55.2 26 53V46Z" fill="#1e3a3a" stroke="#0f172a" stroke-width="2"/>
+              <path d="M29 36C29 31 31 28 32 25C33 28 35 31 35 36" stroke="#b45309" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <!-- Olive Green Title Banner -->
+          <div class="olive-banner px-8 sm:px-12 py-3 text-white en-font text-xl sm:text-3xl font-bold tracking-wide">
+            Vocabulary Practice
+          </div>
+        </div>
+      </div>
+
+      <!-- Second Row: Clipboard "1 Choose the correct answer" + Milestone Track -->
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6" dir="ltr">
+        
+        <!-- Clipboard + Wooden Sign -->
+        <div class="flex items-center">
+          <div class="z-10 -mr-4 bg-[#9ab863] p-1.5 rounded-xl border-2 border-stone-800 shadow-md transform -rotate-3">
+            <div class="w-8 h-3 bg-amber-600 border-2 border-stone-800 rounded-t-md mx-auto -mt-3 mb-0.5"></div>
+            <div class="bg-white px-3.5 py-2 rounded-md border-2 border-stone-800 text-2xl sm:text-3xl font-black en-font text-stone-900 leading-none">
+              1
+            </div>
+          </div>
+          <div class="wood-banner pl-7 pr-8 py-2.5 rounded-r-xl en-font text-lg sm:text-xl font-bold text-stone-900">
+            Choose the correct answer
+          </div>
+        </div>
+
+        <!-- Interactive 8-Step Milestone Track with Flag -->
+        <div class="flex items-center gap-1 sm:gap-1.5 bg-amber-50/70 px-4 py-2.5 rounded-2xl border border-amber-200/80">
+          <div id="milestoneSteps" class="flex items-center"></div>
+          <div class="ml-1 flex flex-col items-center">
+            <span id="finishFlag" class="text-2xl transition-transform duration-300">🚩</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Arabic Instruction Banner + Speak All Button -->
+      <div class="mt-5 pt-4 border-t border-stone-100 flex flex-wrap items-center justify-between gap-3 text-sm" dir="rtl">
+        <div class="flex items-center gap-2 text-stone-600 font-bold">
+          <span id="readingLockIcon" class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-700">🔒</span>
+          <span id="readingInstructionText">أجب عن الأسئلة الثمانية بوضع دائرة حول الإجابة الصحيحة، <span class="text-teal-700 font-extrabold">ولن تبدأ قراءة الجمل إلا بعد الانتهاء من الإجابة على الأسئلة</span>!</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- Mode Switch: Read after ALL questions (default) vs Read after EACH answered question -->
+          <button id="readingTimingBtn" onclick="toggleReadingTimingMode()" class="px-3 py-2 rounded-xl border border-stone-300 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center gap-1.5 transition" title="تغيير توقيت القراءة">
+            <span>⚙️</span>
+            <span id="readingTimingLabel">الوضع: القراءة بعد إنهاء جميع الأسئلة</span>
+          </button>
+          <button id="readAllHeaderBtn" onclick="readAllCompletedSentences()" disabled class="px-4 py-2 rounded-xl bg-gradient-to-l from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 disabled:from-stone-300 disabled:to-stone-300 disabled:text-stone-500 disabled:cursor-not-allowed text-white font-bold text-xs flex items-center gap-2 shadow-sm transition">
+            <span id="readAllBtnIcon">🔒</span>
+            <span id="readAllBtnText">قراءة الجمل (بعد إكمال الأسئلة 0/8)</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Single-Question Navigation Bar (Hidden in Full Worksheet Mode) -->
+    <div id="singleModeNav" class="hidden mb-4 bg-white p-3 rounded-2xl shadow-sm border border-stone-200 flex items-center justify-between">
+      <button onclick="changeSlide(-1)" id="prevSlideBtn" class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 disabled:opacity-40 font-bold text-sm transition">
+        ➡️ السؤال السابق
+      </button>
+      <div class="text-sm font-extrabold text-stone-700">
+        السؤال <span id="currentSlideIndex" class="text-amber-700">1</span> من 8
+      </div>
+      <button onclick="changeSlide(1)" id="nextSlideBtn" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-40 font-bold text-sm transition">
+        السؤال التالي ⬅️
+      </button>
+    </div>
+
+    <!-- Questions List Container -->
+    <div id="questionsContainer" class="space-y-5" dir="ltr">
+      <!-- Populated by JavaScript -->
+    </div>
+
+  </main>
+
+  <!-- Innovative Floating Studio Voice Player -->
+  <div id="speechToast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900/95 backdrop-blur-md text-white px-5 py-3.5 rounded-3xl shadow-2xl border border-teal-500/40 flex items-center gap-4 max-w-xl w-[94%] transition-all duration-300" dir="ltr">
+    <!-- Calm Animated Soundwave -->
+    <div class="flex items-center gap-1 h-6 px-2 bg-teal-950/80 rounded-xl border border-teal-700/50">
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+    </div>
+
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2">
+        <span id="speechStageBadge" class="text-[10px] bg-teal-500/20 text-teal-300 border border-teal-400/30 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+          Calm Studio Voice
+        </span>
+        <span id="activeVoiceNameBadge" class="text-[10px] text-slate-400 truncate"></span>
+      </div>
+      <div id="speechToastText" class="en-font text-base sm:text-lg font-semibold text-white mt-0.5 truncate"></div>
+    </div>
+
+    <button onclick="stopSpeech()" class="text-xs bg-rose-500/20 hover:bg-rose-500/40 text-rose-200 border border-rose-400/30 px-3 py-1.5 rounded-xl font-bold transition shrink-0">
+      إيقاف ⏹
+    </button>
+  </div>
+
+  <!-- Completion Modal -->
+  <div id="completionModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 text-center shadow-2xl border-4 border-amber-300 relative">
+      <div class="w-20 h-20 mx-auto -mt-14 bg-amber-400 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-4xl">
+        🏆
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-800 mt-3">أحسنت! اكتمل الاختبار بنجاح</h2>
+      <p class="text-stone-600 text-sm mt-1">لقد أجبت على جميع الجمل الثماني واستمعت إلى نطقها الهادئ</p>
+
+      <div class="grid grid-cols-3 gap-3 my-6">
+        <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-2xl">
+          <div class="text-xs font-bold text-emerald-700">نسبة التقدم</div>
+          <div class="text-2xl font-black text-emerald-900 mt-1">100%</div>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 p-3 rounded-2xl">
+          <div class="text-xs font-bold text-amber-700">الدرجة النهائية</div>
+          <div id="modalScore" class="text-2xl font-black text-amber-900 mt-1">8 / 8</div>
+        </div>
+        <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-2xl">
+          <div class="text-xs font-bold text-indigo-700">دقة الإنجاز</div>
+          <div id="modalAccuracy" class="text-2xl font-black text-indigo-900 mt-1">100%</div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button onclick="readAllAllSentencesFromModal()" class="flex-1 py-3 px-4 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md transition">
+          <span>🎙️</span>
+          <span>الاستماع للقصة الكاملة (8 جمل)</span>
+        </button>
+        <button onclick="closeModal()" class="py-3 px-5 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-sm transition">
+          مراجعة الورقة
+        </button>
+        <button onclick="resetQuiz(); closeModal();" class="py-3 px-5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition">
+          إعادة 🔄
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 8 Worksheet Questions with tokenized words for innovative karaoke highlighting
+    const questionsData = [
+      {
+        id: 1,
+        beforeBlank: "A camel lives in the",
+        afterBlank: ".",
+        options: [
+          { letter: "a", text: "desert", isCorrect: true },
+          { letter: "b", text: "kitchen", isCorrect: false },
+          { letter: "c", text: "hospital", isCorrect: false },
+          { letter: "d", text: "classroom", isCorrect: false }
+        ],
+        arabicTranslation: "الجمل يعيش في الصحراء."
+      },
+      {
+        id: 2,
+        beforeBlank: "Dinosaurs are",
+        afterBlank: ".",
+        options: [
+          { letter: "a", text: "delicious", isCorrect: false },
+          { letter: "b", text: "expensive", isCorrect: false },
+          { letter: "c", text: "extinct", isCorrect: true },
+          { letter: "d", text: "thirsty", isCorrect: false }
+        ],
+        arabicTranslation: "الديناصورات منقرضة."
+      },
+      {
+        id: 3,
+        beforeBlank: "Please don't",
+        afterBlank: "the flowers.",
+        options: [
+          { letter: "a", text: "close", isCorrect: false },
+          { letter: "b", text: "borrow", isCorrect: false },
+          { letter: "c", text: "have", isCorrect: false },
+          { letter: "d", text: "touch", isCorrect: true }
+        ],
+        arabicTranslation: "من فضلك لا تلمس الزهور."
+      },
+      {
+        id: 4,
+        beforeBlank: "A butterfly is an",
+        afterBlank: ".",
+        options: [
+          { letter: "a", text: "insect", isCorrect: true },
+          { letter: "b", text: "reptile", isCorrect: false },
+          { letter: "c", text: "fish", isCorrect: false },
+          { letter: "d", text: "mammal", isCorrect: false }
+        ],
+        arabicTranslation: "الفراشة هي حشرة."
+      },
+      {
+        id: 5,
+        beforeBlank: "A bird builds a",
+        afterBlank: ".",
+        options: [
+          { letter: "a", text: "classroom", isCorrect: false },
+          { letter: "b", text: "nest", isCorrect: true },
+          { letter: "c", text: "supermarket", isCorrect: false },
+          { letter: "d", text: "restaurant", isCorrect: false }
+        ],
+        arabicTranslation: "الطائر يبني عشاً."
+      },
+      {
+        id: 6,
+        beforeBlank: "My rabbit is very",
+        afterBlank: ".",
+        options: [
+          { letter: "a", text: "empty", isCorrect: false },
+          { letter: "b", text: "noisy", isCorrect: false },
+          { letter: "c", text: "old", isCorrect: false },
+          { letter: "d", text: "furry", isCorrect: true }
+        ],
+        arabicTranslation: "أرنبي كثيف الفرو جداً."
+      },
+      {
+        id: 7,
+        beforeBlank: "An eagle flies with its",
+        afterBlank: ".",
+        options: [
+          { letter: "a", text: "hands", isCorrect: false },
+          { letter: "b", text: "wings", isCorrect: true },
+          { letter: "c", text: "feet", isCorrect: false },
+          { letter: "d", text: "tail", isCorrect: false }
+        ],
+        arabicTranslation: "النسر يطير بأجنحته."
+      },
+      {
+        id: 8,
+        beforeBlank: "We should",
+        afterBlank: "our pets every day.",
+        options: [
+          { letter: "a", text: "throw away", isCorrect: false },
+          { letter: "b", text: "turn off", isCorrect: false },
+          { letter: "c", text: "look after", isCorrect: true },
+          { letter: "d", text: "wake up", isCorrect: false }
+        ],
+        arabicTranslation: "يجب علينا أن نعتني بحيواناتنا الأليفة كل يوم."
+      }
+    ];
+
+    // Quiz & Voice Studio State
+    let solvedState = {};
+    let totalAttempts = 0;
+    let totalCorrect = 0;
+    let singleCardMode = false;
+    let currentCardIndex = 0;
+    let audioCtx = null;
+
+    // Voice Persona Settings:
+    // 'innovative' = Soft chime -> Calmly speaks the target word -> brief pause -> reads full sentence with word-by-word highlight
+    // 'storyteller' = Warm, soothing, fluid sentence reading with word-by-word highlight
+    // 'clear_kid' = Slower, gentle articulation for young learners
+    let currentPersona = 'innovative';
+    // Reading Timing Mode:
+    // 'after_all' = Strictly do NOT read anything until all 8 questions are answered (Default as requested)
+    // 'after_each' = Read each sentence only after that specific question is answered (never before answering)
+    let readingTimingMode = 'after_all';
+    let availableEnglishVoices = [];
+    let selectedVoiceURI = 'auto';
+    let wordHighlightTimer = null;
+    let activeSequenceTimeouts = [];
+
+    // Check if audio reading is permitted for a given question
+    function isReadingAllowed(questionId) {
+      const solvedCount = Object.keys(solvedState).length;
+      if (readingTimingMode === 'after_all') {
+        return solvedCount === questionsData.length;
+      }
+      return Boolean(solvedState[questionId]?.solved);
+    }
+
+    function toggleReadingTimingMode() {
+      stopSpeech();
+      readingTimingMode = readingTimingMode === 'after_all' ? 'after_each' : 'after_all';
+      const label = document.getElementById('readingTimingLabel');
+      const instruction = document.getElementById('readingInstructionText');
+      if (readingTimingMode === 'after_all') {
+        label.textContent = 'الوضع: القراءة بعد إنهاء جميع الأسئلة';
+        instruction.innerHTML = 'أجب عن الأسئلة الثمانية بوضع دائرة حول الإجابة الصحيحة، <span class="text-teal-700 font-extrabold">ولن تبدأ قراءة الجمل إلا بعد الانتهاء من الإجابة على جميع الأسئلة</span>!';
+      } else {
+        label.textContent = 'الوضع: القراءة بعد إجابة كل سؤال';
+        instruction.innerHTML = 'ضع دائرة حول الإجابة الصحيحة، <span class="text-teal-700 font-extrabold">وستُقرأ كل جملة فقط بعد الإجابة عليها</span>!';
+      }
+      renderQuestions();
+      updateProgressUI();
+    }
+
+    // Soothing Harp / Kalimba Acoustic Chimes (Web Audio API with Warm Low-Pass Filter)
+    function playCalmChime(type) {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const now = audioCtx.currentTime;
+
+        // Warm filter so sounds are never harsh
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1400, now);
+        filter.connect(audioCtx.destination);
+
+        if (type === 'correct') {
+          // Soothing Pentatonic Harp Chord (C5 - E5 - G5 - A5)
+          const notes = [523.25, 659.25, 783.99, 880.00];
+          notes.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+            gain.gain.setValueAtTime(0.001, now + idx * 0.09);
+            gain.gain.linearRampToValueAtTime(0.11, now + idx * 0.09 + 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.0008, now + idx * 0.09 + 0.65);
+            osc.connect(gain);
+            gain.connect(filter);
+            osc.start(now + idx * 0.09);
+            osc.stop(now + idx * 0.09 + 0.7);
+          });
+        } else if (type === 'word_sparkle') {
+          // Gentle single warm bell note before reading
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, now); // D5
+          gain.gain.setValueAtTime(0.06, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.connect(gain);
+          gain.connect(filter);
+          osc.start(now);
+          osc.stop(now + 0.38);
+        } else if (type === 'wrong') {
+          // Soft wooden marimba thud (non-stressful)
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(240, now);
+          osc.frequency.exponentialRampToValueAtTime(170, now + 0.22);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.connect(gain);
+          gain.connect(filter);
+          osc.start(now);
+          osc.stop(now + 0.27);
+        }
+      } catch (e) {}
+    }
+
+    // Smart Neural & Calm Voice Scoring Algorithm
+    function scoreVoiceQuality(v) {
+      if (!v || !v.lang || !v.lang.toLowerCase().startsWith('en')) return -100;
+      let score = 0;
+      const name = v.name.toLowerCase();
+      const lang = v.lang.toLowerCase();
+
+      // Top priority: Microsoft Edge / Windows Neural Online Voices (Ultra-realistic & calm)
+      if (name.includes('natural') || name.includes('online')) score += 120;
+      if (name.includes('aria') || name.includes('jenny') || name.includes('ana') || name.includes('sonia') || name.includes('libby') || name.includes('ava') || name.includes('emma') || name.includes('andrew') || name.includes('brian')) {
+        score += 65;
+      }
+
+      // Apple macOS / iOS Enhanced & Premium Calm Voices
+      if (name.includes('premium') || name.includes('enhanced')) score += 90;
+      if (name.includes('samantha') || name.includes('allison') || name.includes('karen') || name.includes('moira') || name.includes('daniel') || name.includes('serena')) {
+        score += 50;
+      }
+
+      // Google Chrome High-Quality Cloud Voices
+      if (name.includes('google uk english female')) score += 85;
+      else if (name.includes('google us english')) score += 80;
+      else if (name.includes('google')) score += 60;
+
+      // Prefer US / GB clear accents
+      if (lang === 'en-us' || lang === 'en-gb' || lang === 'en_us' || lang === 'en_gb') score += 25;
+
+      // Avoid novelty or robotic voices
+      if (name.includes('espeak') || name.includes(' novelty') || name.includes('zarvox') || name.includes('whisper')) {
+        score -= 80;
+      }
+
+      return score;
+    }
+
+    function loadAndRankVoices() {
+      if (!('speechSynthesis' in window)) return;
+      const rawVoices = window.speechSynthesis.getVoices() || [];
+      const englishVoices = rawVoices
+        .filter(v => v.lang && v.lang.toLowerCase().startsWith('en'))
+        .sort((a, b) => scoreVoiceQuality(b) - scoreVoiceQuality(a));
+
+      if (englishVoices.length === 0) return;
+      availableEnglishVoices = englishVoices;
+
+      const select = document.getElementById('voiceSelectDropdown');
+      if (!select) return;
+
+      const currentVal = select.value;
+      select.innerHTML = `<option value="auto">✨ اختيار تلقائي لأهدأ صوت طبيعي (${englishVoices[0].name.replace(/Microsoft |Online \(Natural\) - /g, '')})</option>`;
+
+      englishVoices.forEach(v => {
+        const isNatural = v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Samantha') || v.name.includes('Ava');
+        const opt = document.createElement('option');
+        opt.value = v.voiceURI;
+        opt.textContent = `${isNatural ? '🌿 ' : '🎙️ '}${v.name} (${v.lang})`;
+        select.appendChild(opt);
+      });
+
+      if (currentVal && Array.from(select.options).some(o => o.value === currentVal)) {
+        select.value = currentVal;
+      }
+    }
+
+    function getBestCalmVoice() {
+      if (availableEnglishVoices.length === 0) {
+        loadAndRankVoices();
+      }
+      if (selectedVoiceURI !== 'auto') {
+        const manual = availableEnglishVoices.find(v => v.voiceURI === selectedVoiceURI);
+        if (manual) return manual;
+      }
+      return availableEnglishVoices[0] || null;
+    }
+
+    function toggleVoiceStudioPanel() {
+      const panel = document.getElementById('voiceStudioPanel');
+      panel.classList.toggle('hidden');
+    }
+
+    function setVoicePersona(persona) {
+      currentPersona = persona;
+      document.querySelectorAll('.persona-btn').forEach(btn => {
+        btn.className = 'persona-btn px-3 py-1.5 rounded-xl text-xs font-bold border-2 border-stone-300 bg-white text-stone-700 hover:border-teal-400 transition flex items-center gap-1.5';
+      });
+      const activeBtn = document.getElementById(`persona-${persona}`);
+      if (activeBtn) {
+        activeBtn.className = 'persona-btn px-3 py-1.5 rounded-xl text-xs font-bold border-2 border-teal-600 bg-teal-600 text-white transition flex items-center gap-1.5 shadow-sm';
+      }
+
+      const badge = document.getElementById('currentPersonaBadge');
+      if (persona === 'innovative') badge.textContent = 'الصوت: ابتكاري هادئ';
+      else if (persona === 'storyteller') badge.textContent = 'الصوت: الراوي الدافئ';
+      else badge.textContent = 'الصوت: معلم متأنٍّ';
+
+      // Only play voice preview if reading is already unlocked
+      if (isReadingAllowed(1)) {
+        testCalmVoice();
+      }
+    }
+
+    function handleManualVoiceChange() {
+      const select = document.getElementById('voiceSelectDropdown');
+      selectedVoiceURI = select.value;
+      if (isReadingAllowed(1)) {
+        testCalmVoice();
+      }
+    }
+
+    function testCalmVoice() {
+      const firstReadable = questionsData.find(q => isReadingAllowed(q.id));
+      if (!firstReadable) return;
+      speakQuestionSentence(firstReadable.id);
+    }
+
+    // Build Milestone Checkpoints
+    function renderMilestones() {
+      const container = document.getElementById('milestoneSteps');
+      container.innerHTML = '';
+      questionsData.forEach((q, idx) => {
+        const isDone = solvedState[q.id]?.solved;
+        const stepEl = document.createElement('div');
+        stepEl.className = 'flex items-center';
+        stepEl.innerHTML = `
+          <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-black transition-all duration-300 ${
+            isDone
+              ? 'bg-amber-400 border-stone-800 text-stone-900 scale-110 shadow-sm'
+              : 'bg-white border-amber-400 text-stone-400'
+          }" title="Question ${q.id}">
+            ${isDone ? '✓' : q.id}
+          </div>
+          ${idx < questionsData.length - 1 ? `<div class="w-2.5 sm:w-4 h-1 ${isDone ? 'bg-amber-500' : 'bg-amber-200'}"></div>` : ''}
+        `;
+        container.appendChild(stepEl);
+      });
+    }
+
+    // Helper: Convert sentence part into interactive clickable & highlightable word spans
+    function renderWordTokens(text, qId, startTokenIndex) {
+      if (!text || text === '.') return { html: text, nextIndex: startTokenIndex };
+      const words = text.trim().split(/\s+/);
+      let currentIdx = startTokenIndex;
+      const canRead = isReadingAllowed(qId);
+      const html = words.map(w => {
+        const cleanWord = w.replace(/[^a-zA-Z']/g, '');
+        if (canRead) {
+          const tokenHtml = `<span id="token-${qId}-${currentIdx}" onclick="speakSingleWord('${cleanWord.replace(/'/g, "\\'")}', this, ${qId})" class="word-token" title="اضغط لسماع نطق الكلمة بهدوء">${w}</span>`;
+          currentIdx++;
+          return tokenHtml;
+        } else {
+          const tokenHtml = `<span id="token-${qId}-${currentIdx}" class="word-token pointer-events-none">${w}</span>`;
+          currentIdx++;
+          return tokenHtml;
+        }
+      }).join(' ');
+      return { html, nextIndex: currentIdx };
+    }
+
+    // Render all 8 Questions
+    function renderQuestions() {
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = '';
+
+      questionsData.forEach((q, qIndex) => {
+        const state = solvedState[q.id];
+        const isSolved = state?.solved;
+        const canReadThis = isReadingAllowed(q.id);
+        const correctOpt = q.options.find(o => o.isCorrect);
+
+        // Tokenize beforeBlank, blank, and afterBlank for synchronized word-by-word karaoke highlighting
+        const beforeTokens = renderWordTokens(q.beforeBlank, q.id, 0);
+        const blankTokenIndex = beforeTokens.nextIndex;
+        const afterTextClean = q.afterBlank === '.' ? '' : q.afterBlank;
+        const afterTokens = renderWordTokens(afterTextClean, q.id, blankTokenIndex + 1);
+
+        const card = document.createElement('div');
+        card.id = `question-card-${q.id}`;
+        card.className = `bg-white rounded-3xl p-4 sm:p-6 shadow-md border-2 transition-all duration-300 ${
+          isSolved ? 'border-emerald-300 bg-emerald-50/15' : 'border-stone-200/90 hover:border-amber-300'
+        } ${singleCardMode && qIndex !== currentCardIndex ? 'hidden' : ''}`;
+
+        card.innerHTML = `
+          <!-- Question Sentence Row -->
+          <div class="flex items-stretch gap-2 sm:gap-3">
+            <!-- Brown Number Badge -->
+            <div class="q-number-badge w-11 sm:w-12 flex items-center justify-center en-font text-xl sm:text-2xl font-bold shrink-0">
+              ${q.id}
+            </div>
+
+            <!-- Cream Sentence Bar -->
+            <div id="sentence-bar-${q.id}" class="q-sentence-bar flex-1 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+              <div class="en-font text-lg sm:text-2xl font-semibold text-stone-900 tracking-wide leading-relaxed flex flex-wrap items-baseline gap-y-1">
+                <span>${beforeTokens.html}</span>
+                <span
+                  id="token-${q.id}-${blankTokenIndex}"
+                  data-blank-id="${q.id}"
+                  onclick="if(isReadingAllowed(${q.id})) speakSingleWord('${correctOpt.text}', this, ${q.id})"
+                  class="blank-slot ${isSolved ? 'filled' : ''} ${canReadThis ? 'cursor-pointer' : 'pointer-events-none'}"
+                >${isSolved ? correctOpt.text : '&nbsp;'}</span>
+                <span>${afterTextClean ? afterTokens.html : '.'}</span>
+              </div>
+
+              <!-- Listen / Read Sentence Button (Only active after answering) -->
+              <div class="flex items-center gap-2 ml-auto">
+                ${
+                  canReadThis
+                    ? `<button
+                        onclick="speakQuestionSentence(${q.id})"
+                        class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold flex items-center gap-1.5 transition shadow-sm bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white"
+                        title="استمع لنطق الجملة بصوت هادئ مع إضاءة الكلمات"
+                      >
+                        <span>🎙️</span>
+                        <span class="en-font">Read Sentence</span>
+                      </button>`
+                    : `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-stone-200/70 text-stone-500 flex items-center gap-1 select-none" dir="rtl">
+                        <span>🔒</span>
+                        <span>${isSolved ? 'تُقرأ بعد إكمال بقية الأسئلة' : 'أجب أولاً لتفعيل القراءة'}</span>
+                      </span>`
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 Options Row (a, b, c, d) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mt-4 pl-2 sm:pl-12 pr-2">
+            ${q.options.map(opt => {
+              const isThisCorrectAndSolved = isSolved && opt.isCorrect;
+              return `
+                <button
+                  id="opt-${q.id}-${opt.letter}"
+                  onclick="handleSelectOption(${q.id}, '${opt.letter}')"
+                  class="option-btn group relative flex items-center gap-2.5 px-3 py-2.5 rounded-2xl border-2 text-left whitespace-nowrap transition-all duration-200 ${
+                    isThisCorrectAndSolved
+                      ? 'circled-correct bg-emerald-50/70 border-emerald-300 cursor-pointer'
+                      : 'bg-stone-50/70 hover:bg-amber-50/80 border-transparent hover:border-amber-200 cursor-pointer active:scale-95'
+                  }"
+                >
+                  <!-- Hand-drawn SVG Circle around the answer -->
+                  <svg class="circle-svg" viewBox="0 0 180 60" preserveAspectRatio="none">
+                    <path class="circle-path" d="M 18,30 C 18,10 55,6 92,7 C 138,8 168,14 168,31 C 168,48 132,54 88,53 C 42,52 14,45 16,27 C 17,17 34,12 52,11" />
+                  </svg>
+
+                  <span class="opt-letter en-font text-base sm:text-lg group-hover:scale-105 ${
+                    isThisCorrectAndSolved ? '!bg-emerald-600' : ''
+                  }">
+                    ${opt.letter}
+                  </span>
+                  <span class="en-font text-base sm:text-lg md:text-xl font-semibold text-stone-800 whitespace-nowrap">
+                    ${opt.text}
+                  </span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Arabic Meaning & Feedback Bar (Revealed after answering) -->
+          <div id="feedback-${q.id}" class="${isSolved ? 'flex' : 'hidden'} mt-3 pt-2.5 border-t border-emerald-200/70 flex-wrap items-center justify-between gap-2 text-xs sm:text-sm px-3" dir="rtl">
+            <div class="flex items-center gap-2 font-bold text-emerald-800">
+              <span>✅ إجابة صحيحة!</span>
+              <span class="text-stone-300">|</span>
+              <span class="text-stone-700">${q.arabicTranslation}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              ${
+                canReadThis
+                  ? `<button onclick="speakSingleWord('${correctOpt.text}', document.querySelector('[data-blank-id=\\'${q.id}\\']'), ${q.id})" class="text-teal-700 hover:text-teal-900 font-bold flex items-center gap-1 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">
+                      <span>🎯</span>
+                      <span>نطق الكلمة (${correctOpt.text})</span>
+                    </button>
+                    <button onclick="speakQuestionSentence(${q.id})" class="text-emerald-700 hover:text-emerald-900 font-extrabold flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                      <span>🔊</span>
+                      <span>قراءة الجملة</span>
+                    </button>`
+                  : `<span class="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                      ⏳ ستُقرأ الجمل تلقائياً فور إكمال جميع الأسئلة (${Object.keys(solvedState).length}/8)
+                    </span>`
+              }
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // Handle Option Selection
+    function handleSelectOption(questionId, chosenLetter) {
+      const q = questionsData.find(item => item.id === questionId);
+      if (!q) return;
+
+      // If already solved, only read if reading is currently allowed
+      if (solvedState[questionId]?.solved) {
+        if (isReadingAllowed(questionId)) {
+          speakQuestionSentence(questionId);
+        }
+        return;
+      }
+
+      const chosenOpt = q.options.find(o => o.letter === chosenLetter);
+      const btnEl = document.getElementById(`opt-${questionId}-${chosenLetter}`);
+
+      totalAttempts++;
+
+      if (chosenOpt.isCorrect) {
+        solvedState[questionId] = {
+          solved: true,
+          selectedWord: chosenOpt.text
+        };
+        totalCorrect++;
+
+        const solvedCount = Object.keys(solvedState).length;
+        const allFinished = solvedCount === questionsData.length;
+
+        // Play soothing harp chord
+        playCalmChime('correct');
+
+        // Re-render cards and progress UI to reflect new state and unlock audio if ready
+        renderQuestions();
+        updateProgressUI();
+
+        if (readingTimingMode === 'after_all') {
+          // Strictly wait until ALL 8 questions are answered before reading the sentences!
+          if (allFinished) {
+            setTimeout(() => {
+              readAllCompletedSentences(() => {
+                setTimeout(showCompletionModal, 500);
+              });
+            }, 450);
+          }
+        } else {
+          // 'after_each' mode: read the newly solved sentence now
+          setTimeout(() => {
+            speakQuestionSentence(questionId, () => {
+              if (allFinished) {
+                setTimeout(showCompletionModal, 550);
+              }
+            });
+          }, 380);
+        }
+
+      } else {
+        // Gentle non-stressful feedback for wrong choice
+        playCalmChime('wrong');
+        btnEl.classList.add('circled-wrong', 'shake-anim', 'bg-rose-50');
+        updateProgressUI();
+
+        setTimeout(() => {
+          btnEl.classList.remove('circled-wrong', 'shake-anim', 'bg-rose-50');
+        }, 850);
+      }
+    }
+
+    // Clear all active word highlights and timers
+    function clearWordHighlights() {
+      if (wordHighlightTimer) {
+        clearInterval(wordHighlightTimer);
+        wordHighlightTimer = null;
+      }
+      activeSequenceTimeouts.forEach(t => clearTimeout(t));
+      activeSequenceTimeouts = [];
+      document.querySelectorAll('.word-token, .blank-slot').forEach(el => {
+        el.classList.remove('active-word');
+      });
+      document.querySelectorAll('[id^="sentence-bar-"]').forEach(el => {
+        el.classList.remove('speaking-active');
+      });
+    }
+
+    // Speak a single clicked word calmly (only if question reading is allowed)
+    function speakSingleWord(wordText, element, questionId = null) {
+      if (questionId !== null && !isReadingAllowed(questionId)) return;
+      if (!('speechSynthesis' in window) || !wordText) return;
+      stopSpeech();
+      playCalmChime('word_sparkle');
+
+      const utterance = new SpeechSynthesisUtterance(wordText);
+      const bestVoice = getBestCalmVoice();
+      if (bestVoice) utterance.voice = bestVoice;
+
+      utterance.lang = bestVoice?.lang || 'en-US';
+      utterance.rate = 0.82; // Calm, clear pronunciation for single words
+      utterance.pitch = 0.96; // Warm, non-robotic pitch
+
+      if (element) element.classList.add('active-word');
+
+      const toast = document.getElementById('speechToast');
+      document.getElementById('speechStageBadge').textContent = '🎯 نطق المفردة بهدوء';
+      document.getElementById('activeVoiceNameBadge').textContent = bestVoice ? bestVoice.name.replace(/Microsoft |Online \(Natural\) - /g, '') : '';
+      document.getElementById('speechToastText').textContent = `"${wordText}"`;
+      toast.classList.remove('hidden');
+
+      utterance.onend = () => {
+        if (element) element.classList.remove('active-word');
+        toast.classList.add('hidden');
+      };
+      utterance.onerror = () => {
+        if (element) element.classList.remove('active-word');
+        toast.classList.add('hidden');
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Speak full sentence with Calm Voice + Synchronized Word-by-Word Karaoke Highlighting
+    function speakQuestionSentence(questionId, onEndCallback = null) {
+      const q = questionsData.find(item => item.id === questionId);
+      if (!q) return;
+
+      // Guard: Never read a sentence unless it has been answered and reading is unlocked
+      if (!isReadingAllowed(questionId)) {
+        if (onEndCallback) onEndCallback();
+        return;
+      }
+
+      if (!('speechSynthesis' in window)) {
+        if (onEndCallback) onEndCallback();
+        return;
+      }
+
+      stopSpeech();
+
+      const isSolved = solvedState[questionId]?.solved;
+      const correctOpt = q.options.find(o => o.isCorrect);
+      const targetWord = correctOpt.text;
+      const fullSentence = `${q.beforeBlank} ${targetWord}${q.afterBlank === '.' ? '.' : ' ' + q.afterBlank}`;
+
+      const bestVoice = getBestCalmVoice();
+      const sentenceBar = document.getElementById(`sentence-bar-${questionId}`);
+      const blankEl = document.querySelector(`[data-blank-id="${questionId}"]`);
+      const toast = document.getElementById('speechToast');
+      const stageBadge = document.getElementById('speechStageBadge');
+      const voiceBadge = document.getElementById('activeVoiceNameBadge');
+      const toastText = document.getElementById('speechToastText');
+
+      voiceBadge.textContent = bestVoice ? bestVoice.name.replace(/Microsoft |Online \(Natural\) - /g, '') : 'Calm Voice';
+
+      // Configure calm pitch & rate according to chosen persona
+      let baseRate = 0.87;
+      let basePitch = 0.96;
+      if (currentPersona === 'storyteller') {
+        baseRate = 0.89;
+        basePitch = 0.94; // Warm storyteller tone
+      } else if (currentPersona === 'clear_kid') {
+        baseRate = 0.78;
+        basePitch = 0.98; // Slow & gentle
+      }
+
+      // Function that reads the full sentence with synchronized word highlighting
+      const startFullSentenceReading = () => {
+        const sentenceUtterance = new SpeechSynthesisUtterance(fullSentence);
+        if (bestVoice) sentenceUtterance.voice = bestVoice;
+        sentenceUtterance.lang = bestVoice?.lang || 'en-US';
+        sentenceUtterance.rate = baseRate;
+        sentenceUtterance.pitch = basePitch;
+
+        // Collect all token elements in order for this question
+        const beforeWordCount = q.beforeBlank.trim().split(/\s+/).length;
+        const afterWordCount = q.afterBlank === '.' ? 0 : q.afterBlank.trim().split(/\s+/).length;
+        const totalTokens = beforeWordCount + 1 + afterWordCount;
+
+        const tokenElements = [];
+        for (let i = 0; i < totalTokens; i++) {
+          const el = document.getElementById(`token-${questionId}-${i}`);
+          if (el) tokenElements.push(el);
+        }
+
+        let boundaryTriggered = false;
+
+        // Highlight specific token index
+        const highlightTokenAt = (idx) => {
+          tokenElements.forEach((el, i) => {
+            if (i === idx) el.classList.add('active-word');
+            else el.classList.remove('active-word');
+          });
+        };
+
+        sentenceUtterance.onstart = () => {
+          if (sentenceBar) sentenceBar.classList.add('speaking-active');
+          stageBadge.textContent = '📖 قراءة الجملة الكاملة بهدوء';
+          toastText.textContent = `${q.id}. ${fullSentence}`;
+          toast.classList.remove('hidden');
+        };
+
+        sentenceUtterance.onend = () => {
+          clearWordHighlights();
+          toast.classList.add('hidden');
+          if (onEndCallback) onEndCallback();
+        };
+
+        sentenceUtterance.onerror = () => {
+          clearWordHighlights();
+          toast.classList.add('hidden');
+          if (onEndCallback) onEndCallback();
+        };
+
+        window.speechSynthesis.speak(sentenceUtterance);
+      };
+
+      // If in 'innovative' persona AND question is solved:
+      // Step 1: Spotlight & calmly pronounce the chosen vocabulary word first
+      // Step 2: Brief relaxing pause (380ms), then read the complete sentence with word-by-word glow!
+      if (currentPersona === 'innovative' && isSolved) {
+        const wordUtterance = new SpeechSynthesisUtterance(targetWord);
+        if (bestVoice) wordUtterance.voice = bestVoice;
+        wordUtterance.lang = bestVoice?.lang || 'en-US';
+        wordUtterance.rate = 0.80; // Extra calm & clear on the key vocabulary word
+        wordUtterance.pitch = 0.96;
+
+        wordUtterance.onstart = () => {
+          if (sentenceBar) sentenceBar.classList.add('speaking-active');
+          if (blankEl) blankEl.classList.add('active-word');
+          stageBadge.textContent = '✨ الخطوة 1: نطق الكلمة المختارة';
+          toastText.textContent = `🎯 "${targetWord}"`;
+          toast.classList.remove('hidden');
+        };
+
+        wordUtterance.onend = () => {
+          if (blankEl) blankEl.classList.remove('active-word');
+          const t = setTimeout(() => {
+            startFullSentenceReading();
+          }, 360);
+          activeSequenceTimeouts.push(t);
+        };
+
+        wordUtterance.onerror = () => {
+          startFullSentenceReading();
+        };
+
+        window.speechSynthesis.speak(wordUtterance);
+      } else {
+        // Direct calm sentence reading
+        startFullSentenceReading();
+      }
+    }
+
+    // Stop active speech and clear highlights
+    function stopSpeech() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      clearWordHighlights();
+      document.getElementById('speechToast').classList.add('hidden');
+    }
+
+    // Read all solved sentences sequentially (only after answering)
+    function readAllCompletedSentences(onAllDoneCallback = null) {
+      const solvedIds = questionsData.filter(q => isReadingAllowed(q.id)).map(q => q.id);
+      if (solvedIds.length === 0) return;
+
+      let idx = 0;
+      function next() {
+        if (idx < solvedIds.length) {
+          const id = solvedIds[idx];
+          idx++;
+          if (singleCardMode) {
+            currentCardIndex = id - 1;
+            renderQuestions();
+            updateSlideNavButtons();
+          } else {
+            const cardEl = document.getElementById(`question-card-${id}`);
+            if (cardEl) {
+              cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+          speakQuestionSentence(id, () => {
+            const t = setTimeout(next, 480);
+            activeSequenceTimeouts.push(t);
+          });
+        } else if (onAllDoneCallback) {
+          onAllDoneCallback();
+        }
+      }
+      next();
+    }
+
+    // Read all 8 complete sentences from the completion modal
+    function readAllAllSentencesFromModal() {
+      closeModal();
+      readAllCompletedSentences();
+    }
+
+    // Update Progress Bar & Achievement Percentage
+    function updateProgressUI() {
+      const solvedCount = Object.keys(solvedState).length;
+      const totalQuestions = questionsData.length;
+      const progressPercent = Math.round((solvedCount / totalQuestions) * 100);
+      const accuracyPercent = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 100;
+
+      document.getElementById('answeredCount').textContent = solvedCount;
+      document.getElementById('progressPercentText').textContent = `${progressPercent}%`;
+      document.getElementById('progressBarFill').style.width = `${progressPercent}%`;
+      document.getElementById('scoreText').textContent = solvedCount;
+      document.getElementById('accuracyText').textContent = `${accuracyPercent}%`;
+
+      // Update Header Read-All & Test Voice Button lock state
+      const readAllBtn = document.getElementById('readAllHeaderBtn');
+      const readAllBtnIcon = document.getElementById('readAllBtnIcon');
+      const readAllBtnText = document.getElementById('readAllBtnText');
+      const lockIcon = document.getElementById('readingLockIcon');
+      const testVoiceBtn = document.getElementById('testVoiceBtn');
+      const testVoiceBtnLabel = document.getElementById('testVoiceBtnLabel');
+
+      const canReadNow = readingTimingMode === 'after_all'
+        ? solvedCount === totalQuestions
+        : solvedCount > 0;
+
+      if (canReadNow) {
+        readAllBtn.disabled = false;
+        readAllBtnIcon.textContent = '🔊';
+        readAllBtnText.textContent = `قراءة الجمل المحلولة (${solvedCount}/${totalQuestions})`;
+        lockIcon.textContent = '🎙️';
+        lockIcon.className = 'inline-flex items-center justify-center w-7 h-7 rounded-full bg-teal-100 text-teal-700';
+        if (testVoiceBtn) {
+          testVoiceBtn.disabled = false;
+          testVoiceBtnLabel.textContent = 'تجربة الصوت الآن';
+        }
+      } else {
+        readAllBtn.disabled = true;
+        readAllBtnIcon.textContent = '🔒';
+        readAllBtnText.textContent = `قراءة الجمل (بعد إكمال الأسئلة ${solvedCount}/${totalQuestions})`;
+        lockIcon.textContent = '🔒';
+        lockIcon.className = 'inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-700';
+        if (testVoiceBtn) {
+          testVoiceBtn.disabled = true;
+          testVoiceBtnLabel.textContent = 'تجربة الصوت (تُفتح بعد الإجابة)';
+        }
+      }
+
+      const statusEl = document.getElementById('motivationalStatus');
+      if (solvedCount === 0) {
+        statusEl.textContent = 'ابدأ بحل الأسئلة لتفعيل قراءة الجمل! 🚀';
+      } else if (solvedCount < 4) {
+        statusEl.textContent = `أحسنت! بقيت ${totalQuestions - solvedCount} أسئلة لبدء القراءة 🌟`;
+      } else if (solvedCount < 8) {
+        statusEl.textContent = `اقتربت! بقيت ${totalQuestions - solvedCount} أسئلة لبدء قراءة الجمل 💪`;
+      } else {
+        statusEl.textContent = 'اكتملت الإجابات! جاري قراءة الجمل بصوت هادئ 🏆';
+        document.getElementById('finishFlag').classList.add('scale-125');
+      }
+
+      renderMilestones();
+    }
+
+    // Toggle between Full Worksheet and Card-by-Card mode
+    function toggleViewMode() {
+      singleCardMode = !singleCardMode;
+      const nav = document.getElementById('singleModeNav');
+      const label = document.getElementById('viewModeLabel');
+
+      if (singleCardMode) {
+        nav.classList.remove('hidden');
+        label.textContent = 'عرض الورقة كاملة';
+      } else {
+        nav.classList.add('hidden');
+        label.textContent = 'عرض سؤال بسؤال';
+      }
+      renderQuestions();
+      updateSlideNavButtons();
+    }
+
+    function changeSlide(delta) {
+      const nextIdx = currentCardIndex + delta;
+      if (nextIdx >= 0 && nextIdx < questionsData.length) {
+        currentCardIndex = nextIdx;
+        renderQuestions();
+        updateSlideNavButtons();
+      }
+    }
+
+    function updateSlideNavButtons() {
+      document.getElementById('currentSlideIndex').textContent = currentCardIndex + 1;
+      document.getElementById('prevSlideBtn').disabled = currentCardIndex === 0;
+      document.getElementById('nextSlideBtn').disabled = currentCardIndex === questionsData.length - 1;
+    }
+
+    function showCompletionModal() {
+      const accuracyPercent = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 100;
+      document.getElementById('modalScore').textContent = `${Object.keys(solvedState).length} / ${questionsData.length}`;
+      document.getElementById('modalAccuracy').textContent = `${accuracyPercent}%`;
+      document.getElementById('completionModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('completionModal').classList.add('hidden');
+    }
+
+    function resetQuiz() {
+      stopSpeech();
+      solvedState = {};
+      totalAttempts = 0;
+      totalCorrect = 0;
+      currentCardIndex = 0;
+      document.getElementById('finishFlag').classList.remove('scale-125');
+      renderQuestions();
+      updateProgressUI();
+      if (singleCardMode) updateSlideNavButtons();
+    }
+
+    // Preload and rank natural speech voices
+    if ('speechSynthesis' in window) {
+      loadAndRankVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        loadAndRankVoices();
+      };
+    }
+
+    // Initial Render
+    renderMilestones();
+    renderQuestions();
+    updateProgressUI();
+  </script>
+</body>
+</html>
